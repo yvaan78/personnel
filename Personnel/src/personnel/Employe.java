@@ -1,6 +1,7 @@
 package personnel;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 /**
  * Employé d'une ligue hébergée par la M2L. Certains peuvent 
@@ -16,15 +17,24 @@ public class Employe implements Serializable, Comparable<Employe>
 	private String nom, prenom, password, mail;
 	private Ligue ligue;
 	private GestionPersonnel gestionPersonnel;
+	private LocalDate dateArrivee;
+	private LocalDate dateDepart;
 	
-	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail, String password)
+	Employe(GestionPersonnel gestionPersonnel, Ligue ligue, String nom, String prenom, String mail,
+			String password, LocalDate dateArrivee, LocalDate dateDepart)
+	throws Exception
 	{
+		if (dateArrivee != null && dateDepart != null && dateDepart.isBefore(dateArrivee))
+	        throw new Exception("La date de départ ne peut pas être avant la date d'arrivée.");
+		
 		this.gestionPersonnel = gestionPersonnel;
 		this.nom = nom;
 		this.prenom = prenom;
 		this.password = password;
 		this.mail = mail;
 		this.ligue = ligue;
+		this.dateArrivee = dateArrivee;
+		this.dateDepart = dateDepart;
 	}
 	
 	/**
@@ -35,7 +45,24 @@ public class Employe implements Serializable, Comparable<Employe>
 	 * @param ligue la ligue pour laquelle on souhaite vérifier si this 
 	 * est l'admininstrateur.
 	 */
-	
+	public LocalDate getDateArrivee() {
+	    return dateArrivee;
+	}
+
+	public LocalDate getDateDepart() {
+	    return dateDepart;
+	}
+	public void setDateArrivee(LocalDate dateArrivee) throws Exception {
+	    if (dateArrivee != null && dateDepart != null && dateDepart.isBefore(dateArrivee))
+	        throw new Exception("Date incohérente : la date d'arrivée doit être avant la date de départ.");
+	    this.dateArrivee = dateArrivee;
+	}
+
+	public void setDateDepart(LocalDate dateDepart) throws Exception {
+	    if (dateArrivee != null && dateDepart != null && dateDepart.isBefore(dateArrivee))
+	        throw new Exception("Date incohérente : la date de départ doit être après la date d'arrivée.");
+	    this.dateDepart = dateDepart;
+	}
 	public boolean estAdmin(Ligue ligue)
 	{
 		return ligue.getAdministrateur() == this;
