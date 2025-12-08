@@ -108,54 +108,42 @@ public class LigueConsole
 		Menu menu = new Menu("Gérer les employés de " + ligue.getNom(), "e");
 		menu.add(afficherEmployes(ligue));
 		menu.add(ajouterEmploye(ligue));
-		menu.add(selectionnerEmploye(ligue)); // CHANGÉ : remplace modifierEmploye()
+		menu.add(selectionnerPourModifierEmploye(ligue));
+		menu.add(selectionnerPourSupprimerEmploye(ligue));
 		menu.addBack("q");
 		return menu;
 	}
 
-	// CHANGÉ : Nouvelle méthode pour sélectionner d'abord un employé
-	private List<Employe> selectionnerEmploye(final Ligue ligue)
+	// Option pour modifier un employé
+	private List<Employe> selectionnerPourModifierEmploye(final Ligue ligue)
 	{
-		return new List<>("Sélectionner un employé", "s", 
+		return new List<>("Modifier un employé", "m", 
 				() -> new ArrayList<>(ligue.getEmployes()),
-				(index, element) -> menuActionsEmploye(ligue, element) // Redirige vers le menu d'actions
+				(index, element) -> 
+				{
+					// Modification immédiate après sélection
+					employeConsole.editerEmploye(element);
+				}
 				);
 	}
 	
-	// CHANGÉ : Nouveau menu pour les actions sur un employé sélectionné
-	private Menu menuActionsEmploye(Ligue ligue, Employe employe)
+	// Option pour supprimer un employé
+	private List<Employe> selectionnerPourSupprimerEmploye(final Ligue ligue)
 	{
-		Menu menu = new Menu("Actions pour " + employe.getNom() + " " + employe.getPrenom(), "e");
-		menu.add(modifierEmploye(employe));
-		menu.add(supprimerEmploye(employe));
-		menu.addBack("q");
-		return menu;
-	}
-	
-	// CHANGÉ : Nouvelle méthode pour modifier un employé
-	private Option modifierEmploye(final Employe employe)
-	{
-		return new Option("Modifier cet employé", "m", 
-				() -> {
-					// Utilise l'EmployeConsole pour éditer l'employé
-					employeConsole.editerEmploye(employe);
-				}
-		);
-	}
-	
-	// CHANGÉ : Nouvelle méthode pour supprimer un employé
-	private Option supprimerEmploye(final Employe employe)
-	{
-		return new Option("Supprimer cet employé", "s", 
-				() -> {
-					String confirmation = getString("Êtes-vous sûr? (oui/non): ");
+		return new List<>("Supprimer un employé", "s", 
+				() -> new ArrayList<>(ligue.getEmployes()),
+				(index, element) -> 
+				{
+					// Suppression immédiate après sélection avec confirmation
+					String confirmation = getString("Êtes-vous sûr de vouloir supprimer " + 
+						element.getNom() + " " + element.getPrenom() + "? (oui/non): ");
 					if (confirmation.equalsIgnoreCase("oui"))
 					{
-						employe.remove();
+						element.remove();
 						System.out.println("Employé supprimé avec succès");
 					}
 				}
-		);
+				);
 	}
 	
 	private Option supprimer(Ligue ligue)
