@@ -28,7 +28,7 @@ public class LigueConsole
 		menu.add(ajouterLigue());
 		menu.add(selectionnerLigue());
 		menu.addBack("q");
-		return menu;
+		return menu;	
 	}
 
 	private Option afficherLigues()
@@ -71,7 +71,6 @@ public class LigueConsole
 		Menu menu = new Menu("Editer " + ligue.getNom());
 		menu.add(afficher(ligue));
 		menu.add(gererEmployes(ligue));
-		//menu.add(changerAdministrateur(ligue));
 		menu.add(changerNom(ligue));
 		menu.add(supprimer(ligue));
 		menu.addBack("q");
@@ -109,36 +108,58 @@ public class LigueConsole
 		Menu menu = new Menu("Gérer les employés de " + ligue.getNom(), "e");
 		menu.add(afficherEmployes(ligue));
 		menu.add(ajouterEmploye(ligue));
-		menu.add(modifierEmploye(ligue));
-		menu.add(supprimerEmploye(ligue));
+		menu.add(selectionnerEmploye(ligue)); // CHANGÉ : remplace modifierEmploye()
 		menu.addBack("q");
 		return menu;
 	}
 
-	private List<Employe> supprimerEmploye(final Ligue ligue)
+	// CHANGÉ : Nouvelle méthode pour sélectionner d'abord un employé
+	private List<Employe> selectionnerEmploye(final Ligue ligue)
 	{
-		return new List<>("Supprimer un employé", "s", 
+		return new List<>("Sélectionner un employé", "s", 
 				() -> new ArrayList<>(ligue.getEmployes()),
-				(index, element) -> {element.remove();}
+				(index, element) -> menuActionsEmploye(ligue, element) // Redirige vers le menu d'actions
 				);
 	}
 	
-	private List<Employe> changerAdministrateur(final Ligue ligue)
+	// CHANGÉ : Nouveau menu pour les actions sur un employé sélectionné
+	private Menu menuActionsEmploye(Ligue ligue, Employe employe)
 	{
-		return null;
-	}		
-
-	private List<Employe> modifierEmploye(final Ligue ligue)
+		Menu menu = new Menu("Actions pour " + employe.getNom() + " " + employe.getPrenom(), "e");
+		menu.add(modifierEmploye(employe));
+		menu.add(supprimerEmploye(employe));
+		menu.addBack("q");
+		return menu;
+	}
+	
+	// CHANGÉ : Nouvelle méthode pour modifier un employé
+	private Option modifierEmploye(final Employe employe)
 	{
-		return new List<>("Modifier un employé", "e", 
-				() -> new ArrayList<>(ligue.getEmployes()),
-				employeConsole.editerEmploye()
-				);
+		return new Option("Modifier cet employé", "m", 
+				() -> {
+					// Utilise l'EmployeConsole pour éditer l'employé
+					employeConsole.editerEmploye(employe);
+				}
+		);
+	}
+	
+	// CHANGÉ : Nouvelle méthode pour supprimer un employé
+	private Option supprimerEmploye(final Employe employe)
+	{
+		return new Option("Supprimer cet employé", "s", 
+				() -> {
+					String confirmation = getString("Êtes-vous sûr? (oui/non): ");
+					if (confirmation.equalsIgnoreCase("oui"))
+					{
+						employe.remove();
+						System.out.println("Employé supprimé avec succès");
+					}
+				}
+		);
 	}
 	
 	private Option supprimer(Ligue ligue)
 	{
 		return new Option("Supprimer", "d", () -> {ligue.remove();});
 	}
-	
 }
