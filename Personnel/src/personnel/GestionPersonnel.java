@@ -41,8 +41,8 @@ public class GestionPersonnel implements Serializable
                 gestionPersonnel = new GestionPersonnel();
                 try 
                 {
-                    // Créer le root avec les valeurs par défaut
-                    // et l'insérer automatiquement dans la base
+                    // Créer le root avec les valeurs par défaut seulement si aucun root n'existe
+                    // (cas de première utilisation)
                     gestionPersonnel.addRoot("root", "toor");
                 } 
                 catch (SauvegardeImpossible e) 
@@ -57,7 +57,7 @@ public class GestionPersonnel implements Serializable
     public GestionPersonnel()
     {
         if (gestionPersonnel != null)
-            throw new RuntimeException("Vous ne pouvez créer qu'une seuls instance de cet objet.");
+            throw new RuntimeException("Vous ne pouvez créer qu'une seule instance de cet objet.");
         ligues = new TreeSet<>();
         gestionPersonnel = this;
     }
@@ -134,6 +134,7 @@ public class GestionPersonnel implements Serializable
     /**
      * Crée le root à partir de son nom et de son mot de passe
      * et l'affecte à la variable d'instance root.
+     * Cette méthode est utilisée pour la création initiale du root.
      * @param nom le nom du root
      * @param password le mot de passe du root
      * @throws SauvegardeImpossible si l'insertion dans la base échoue
@@ -141,7 +142,21 @@ public class GestionPersonnel implements Serializable
     public void addRoot(String nom, String password) throws SauvegardeImpossible
     {
         // Créer un nouveau root avec les paramètres fournis
-        // Le root n'a pas de ligue (null) et son prénom peut être vide ou "root"
+        // Le root n'a pas de ligue (null)
         this.root = new Employe(this, null, nom, "root", "root@localhost", password);
+    }
+    
+    /**
+     * Ajoute le root à partir des données lues dans la base de données.
+     * Cette méthode est utilisée lors du chargement depuis la base.
+     * @param id l'identifiant du root
+     * @param nom le nom du root
+     * @param prenom le prénom du root
+     * @param mail le mail du root
+     * @param password le mot de passe du root
+     */
+    public void addRoot(int id, String nom, String prenom, String mail, String password)
+    {
+        this.root = new Employe(this, null, id, nom, prenom, mail, password);
     }
 }
