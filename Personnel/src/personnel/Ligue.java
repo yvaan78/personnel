@@ -18,6 +18,7 @@ public class Ligue implements Serializable, Comparable<Ligue>
     private Employe administrateur;
     private GestionPersonnel gestionPersonnel;
     
+    // Constructeur pour insertion (avec auto-incrément)
     public Ligue(GestionPersonnel gestionPersonnel, String nom) throws SauvegardeImpossible
     {
         this.gestionPersonnel = gestionPersonnel;
@@ -26,6 +27,7 @@ public class Ligue implements Serializable, Comparable<Ligue>
         this.id = gestionPersonnel.insert(this);
     }
     
+    // Constructeur pour reconstruction depuis la base de données
     public Ligue(GestionPersonnel gestionPersonnel, int id, String nom)
     {
         this.gestionPersonnel = gestionPersonnel;
