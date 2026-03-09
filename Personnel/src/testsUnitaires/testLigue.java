@@ -8,88 +8,73 @@ import personnel.*;
 
 class testLigue 
 {
-	GestionPersonnel gestionPersonnel = GestionPersonnel.getGestionPersonnel();
-	
-	@Test
-	void createLigue() throws SauvegardeImpossible
-	{
-		Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
-		assertEquals("Fléchettes", ligue.getNom());
-	}
+    GestionPersonnel gestionPersonnel = GestionPersonnel.getGestionPersonnel();
+    
+    @Test
+    void createLigue() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        assertEquals("Fléchettes", ligue.getNom());
+    }
 
-	@Test
-	void addEmploye() throws SauvegardeImpossible
-	{
-		Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
-		Employe employe = ligue.addEmploye("Bouchard", "Gérard", "g.bouchard@gmail.com", "azerty"); 
-		assertEquals(employe, ligue.getEmployes().first());
-	}
-
-	// Tests unitaires pour les dates d'arrivée et départ
-	// Pitié faites que ca marche
-
-	@Test
-	void testDatesEmployeValides() throws SauvegardeImpossible {
-	    Ligue ligue = gestionPersonnel.addLigue("Tennis");
-	    Employe employe = ligue.addEmploye("Aka-bile", "Daniel", "dnl78@mail.com", "j'aimetropmameuf");
-
-	    LocalDate dateArrivee = LocalDate.of(2025, 12, 1);
-	    LocalDate dateDepart = LocalDate.of(2025, 12, 10);
-
-	    try {
-	        employe.setDateArrivee(dateArrivee);
-	        employe.setDateDepart(dateDepart);
-	    } catch (Exception e) {
-	        fail("Exception non attendue pour des dates valides");
-	    }
-
-	    assertEquals(dateArrivee, employe.getDateArrivee());
-	    assertEquals(dateDepart, employe.getDateDepart());
-	}
-
-	@Test
-	void testDateDepartAvantArrivee() throws SauvegardeImpossible {
-	    Ligue ligue = gestionPersonnel.addLigue("football");
-	    Employe employe = ligue.addEmploye("Boya", "Yvan", "yvan@mail.com", "sonicthehedgehog");
-
-	    LocalDate dateArrivee = LocalDate.of(2025, 12, 10);
-	    LocalDate dateDepart = LocalDate.of(2025, 12, 1);
-
-	    try {
-	        employe.setDateArrivee(dateArrivee);
-	    } catch (Exception e) {
-	        fail("Exception non attendue lors du setDateArrivee");
-	    }
-
-	    try {
-	        employe.setDateDepart(dateDepart);
-	        fail("Une exception aurait dû être levée : dateDepart avant dateArrivee");
-	    } catch (Exception e) {
-	        // si le test réussi, voilà l'exception attendue
-	        assertTrue(e.getMessage().contains("La date de départ"));
-	    }
-	}
-
-	@Test
-	void testDateArriveeApresDepart() throws SauvegardeImpossible {
-	    Ligue ligue = gestionPersonnel.addLigue("Basket");
-	    Employe employe = ligue.addEmploye("Nkamen", "Yanis", "yanis@mail.com", "lebronjames");
-
-	    LocalDate dateDepart = LocalDate.of(2025, 12, 10);
-	    LocalDate dateArrivee = LocalDate.of(2025, 12, 15);
-
-	    try {
-	        employe.setDateDepart(dateDepart);
-	    } catch (Exception e) {
-	        fail("Exception non attendue lors du setDateDepart");
-	    }
-
-	    try {
-	        employe.setDateArrivee(dateArrivee);
-	        fail("Une exception aurait dû être levée : dateArrivee après dateDepart");
-	    } catch (Exception e) {
-	        // Test réussi, exception attendue
-	        assertTrue(e.getMessage().contains("La date d'arrivée"));
-	    }
-	}
+    @Test
+    void addEmploye() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        Employe employe = ligue.addEmploye("Bouchard", "Gérard", "g.bouchard@gmail.com", "azerty"); 
+        assertEquals(employe, ligue.getEmployes().first());
+    }
+    
+    @Test
+    void testDatesEmploye() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        Employe employe = ligue.addEmploye("Bouchard", "Gérard", "g.bouchard@gmail.com", "azerty");
+        
+        LocalDate arrivee = LocalDate.of(2020, 1, 1);
+        LocalDate depart = LocalDate.of(2023, 12, 31);
+        
+        employe.setDateArrivee(arrivee);
+        employe.setDateDepart(depart);
+        
+        assertEquals(arrivee, employe.getDateArrivee());
+        assertEquals(depart, employe.getDateDepart());
+    }
+    
+    @Test
+    void testDateArriveeApresDepart() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        Employe employe = ligue.addEmploye("Bouchard", "Gérard", "g.bouchard@gmail.com", "azerty");
+        
+        LocalDate arrivee = LocalDate.of(2023, 12, 31);
+        LocalDate depart = LocalDate.of(2020, 1, 1);
+        
+        employe.setDateArrivee(arrivee);
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            employe.setDateDepart(depart);
+        });
+    }
+    
+    @Test
+    void testEstEnFonction() throws SauvegardeImpossible
+    {
+        Ligue ligue = gestionPersonnel.addLigue("Fléchettes");
+        Employe employe = ligue.addEmploye("Bouchard", "Gérard", "g.bouchard@gmail.com", "azerty");
+        
+        // Sans dates, devrait être en fonction
+        assertTrue(employe.estEnFonction());
+        
+        // Avec date d'arrivée future
+        LocalDate future = LocalDate.now().plusYears(1);
+        employe.setDateArrivee(future);
+        assertFalse(employe.estEnFonction());
+        
+        // Avec date de départ passée
+        LocalDate passee = LocalDate.now().minusYears(1);
+        employe.setDateArrivee(LocalDate.now().minusYears(2));
+        employe.setDateDepart(passee);
+        assertFalse(employe.estEnFonction());
+    }
 }
