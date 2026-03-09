@@ -2,6 +2,9 @@ package commandLine;
 
 import static commandLineMenus.rendering.examples.util.InOut.getString;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 
 import commandLineMenus.List;
@@ -14,6 +17,7 @@ public class LigueConsole
 {
     private GestionPersonnel gestionPersonnel;
     private EmployeConsole employeConsole;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public LigueConsole(GestionPersonnel gestionPersonnel, EmployeConsole employeConsole)
     {
@@ -86,7 +90,7 @@ public class LigueConsole
     }
     
     /**
-     * Nouvelle option pour changer l'administrateur d'une ligue
+     * Option pour changer l'administrateur d'une ligue
      * @param ligue la ligue dont on veut changer l'administrateur
      * @return l'option de menu
      */
@@ -106,7 +110,9 @@ public class LigueConsole
                     int index = 1;
                     for (Employe employe : ligue.getEmployes())
                     {
-                        System.out.println(index++ + ". " + employe.getNom() + " " + employe.getPrenom() + " (" + employe.getMail() + ")");
+                        String statut = employe.estEnFonction() ? " (en fonction)" : " (hors fonction)";
+                        System.out.println(index++ + ". " + employe.getNom() + " " + employe.getPrenom() + 
+                                " (" + employe.getMail() + ")" + statut);
                     }
                     
                     int choix = -1;
@@ -127,6 +133,19 @@ public class LigueConsole
                     }
                     
                     Employe nouvelAdmin = (Employe) ligue.getEmployes().toArray()[choix - 1];
+                    
+                    // Vérification si l'employé est en fonction
+                    if (!nouvelAdmin.estEnFonction())
+                    {
+                        String confirmation = getString("Attention : cet employé n'est pas en fonction. " +
+                                "Voulez-vous quand même le nommer administrateur ? (oui/non) : ");
+                        if (!confirmation.equalsIgnoreCase("oui"))
+                        {
+                            System.out.println("Opération annulée.");
+                            return;
+                        }
+                    }
+                    
                     ligue.setAdministrateur(nouvelAdmin);
                     System.out.println("Le nouvel administrateur de la ligue est : " + nouvelAdmin.getPrenom() + " " + nouvelAdmin.getNom());
                 }
@@ -146,27 +165,139 @@ public class LigueConsole
         return new Option("Ajouter un employé", "a",
                 () -> 
                 {
-                    ligue.addEmploye(getString("nom : "), 
-                        getString("prenom : "), getString("mail : "), 
-                        getString("password : "));
+                    try
+                    {
+                        String nom = getString("nom : ");
+                        String prenom = getString("prenom : ");
+                        String mail = getString("mail : ");
+                        String password = getString("password : ");
+                        
+                        Employe employe = ligue.addEmploye(nom, prenom, mail, password);
+                        System.out.println("Employé ajouté avec succès.");
+                        
+                        // Proposition d'ajouter une date d'arrivée
+                        String ajouterDate = getString("Voulez-vous ajouter une date d'arrivée ? (o/n) : ");
+                        if (ajouterDate.equalsIgnoreCase("o"))
+                        {
+                            LocalDate dateArrivee = saisirDate("Date d'arrivée");
+                            if (dateArrivee != null)
+                            {
+                                employe.setDateArrivee(dateArrivee);
+                                System.out.println("Date d'arrivée enregistrée.");
+                                
+                                // Proposition d'ajouter une date de départ
+                                String ajouterDateDepart = getString("Voulez-vous ajouter une date de départ ? (o/n) : ");
+                                if (ajouterDateDepart.equalsIgnoreCase("o"))
+                                {
+                                    LocalDate dateDepart = saisirDate("Date de départ");
+                                    if (dateDepart != null)
+                                    {
+                                        try
+                                        {
+                                            employe.setDateDepart(dateDepart);
+                                            System.out.println("Date de départ enregistrée.");
+                                        }
+                                        catch (IllegalArgumentException e)
+                                        {
+                                            System.out.println("Erreur : " + e.getMessage());
+                                            System.out.println("La date de départ n'a pas été enregistrée.");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        System.out.println("Erreur lors de l'ajout de l'employé : " + e.getMessage());
+                    }
                 }
         );
+    }
+    
+    /**
+     * Méthode utilitaire pour saisir une date
+     */
+    private LocalDate saisirDate(String message)
+    {
+        while (true)
+        {
+            String saisie = getString(message + " (jj/mm/aaaa) ou 'q' pour ignorer : ");
+            if (saisie.equalsIgnoreCase("q"))
+            {
+                return null;
+            }
+            
+            try
+            {
+                return LocalDate.parse(saisie, DATE_FORMATTER);
+            }
+            catch (DateTimeParseException e)
+            {
+                System.out.println("Format de date invalide. Veuillez utiliser le format jj/mm/aaaa (ex: 25/12/2023)");
+            }
+        }
     }
     
     private Menu gererEmployes(Ligue ligue)
     {
         Menu menu = new Menu("Gérer les employés de " + ligue.getNom(), "e");
-        menu.add(afficherEmployes(ligue));  // Raccourci changé pour "f" (pour "fficher")
-        menu.add(ajouterEmploye(ligue));    // Raccourci "a" conservé pour "ajouter"
+        menu.add(afficherEmployes(ligue));  // Raccourci "f" pour "fficher"
+        menu.add(ajouterEmploye(ligue));    // Raccourci "a" pour "ajouter"
         menu.add(selectionnerPourModifierEmploye(ligue));
         menu.add(selectionnerPourSupprimerEmploye(ligue));
         menu.add(selectionnerPourNommerAdministrateur(ligue));
+        menu.add(afficherEmployesEnFonction(ligue));
+        menu.add(afficherAnciensEmployes(ligue));
         menu.addBack("q");
         return menu;
     }
     
+    private Option afficherEmployesEnFonction(final Ligue ligue)
+    {
+        return new Option("Afficher les employés en fonction", "o", () -> 
+        {
+            System.out.println("Employés actuellement en fonction :");
+            boolean trouve = false;
+            for (Employe employe : ligue.getEmployes())
+            {
+                if (employe.estEnFonction())
+                {
+                    System.out.println("  - " + employe.getNom() + " " + employe.getPrenom());
+                    trouve = true;
+                }
+            }
+            if (!trouve)
+            {
+                System.out.println("  Aucun employé en fonction.");
+            }
+        });
+    }
+    
+    private Option afficherAnciensEmployes(final Ligue ligue)
+    {
+        return new Option("Afficher les anciens employés", "i", () -> 
+        {
+            System.out.println("Anciens employés (hors fonction) :");
+            boolean trouve = false;
+            for (Employe employe : ligue.getEmployes())
+            {
+                if (!employe.estEnFonction() && employe.getDateDepart() != null)
+                {
+                    System.out.println("  - " + employe.getNom() + " " + employe.getPrenom() + 
+                            " (départ: " + employe.getDateDepart().format(DATE_FORMATTER) + ")");
+                    trouve = true;
+                }
+            }
+            if (!trouve)
+            {
+                System.out.println("  Aucun ancien employé.");
+            }
+        });
+    }
+    
     /**
-     * Nouvelle option pour nommer un employé comme administrateur directement depuis la liste des employés
+     * Option pour nommer un employé comme administrateur directement depuis la liste des employés
      * @param ligue la ligue concernée
      * @return l'option de menu
      */
@@ -176,6 +307,16 @@ public class LigueConsole
                 () -> new ArrayList<>(ligue.getEmployes()),
                 (index, element) -> 
                 {
+                    if (!element.estEnFonction())
+                    {
+                        String confirmation = getString("Attention : cet employé n'est pas en fonction. " +
+                                "Voulez-vous quand même le nommer administrateur ? (oui/non) : ");
+                        if (!confirmation.equalsIgnoreCase("oui"))
+                        {
+                            return;
+                        }
+                    }
+                    
                     String confirmation = getString("Êtes-vous sûr de vouloir nommer " + 
                         element.getPrenom() + " " + element.getNom() + 
                         " comme administrateur de la ligue ? (oui/non) : ");
@@ -208,6 +349,13 @@ public class LigueConsole
                 () -> new ArrayList<>(ligue.getEmployes()),
                 (index, element) -> 
                 {
+                    if (element.estAdmin(ligue))
+                    {
+                        System.out.println("Impossible de supprimer l'administrateur de la ligue.");
+                        System.out.println("Veuillez d'abord nommer un autre administrateur.");
+                        return;
+                    }
+                    
                     String confirmation = getString("Êtes-vous sûr de vouloir supprimer " + 
                         element.getNom() + " " + element.getPrenom() + "? (oui/non): ");
                     if (confirmation.equalsIgnoreCase("oui"))
