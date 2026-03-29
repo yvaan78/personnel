@@ -1,0 +1,53 @@
+Maquettes de l'Interface Graphique (GUI) - M2L
+
+1. Fenêtre de Connexion (Critère : Connexion)
+*C'est la première fenêtre qui s'ouvre au lancement de l'application.*
+
+Éléments présents :**
+Titre : "Gestion Personnel M2L - Connexion"
+Champ de texte : Adresse Email
+Champ de texte caché (password) : Mot de passe
+Bouton : [ Se connecter ]
+Action: Redirige vers(Root/Super-Admin) ou (Administrateur de ligue) selon les droits.
+
+
+2. Fenêtre Principale / Root (Critères : Liste des ligues, CRUD Ligues, Gestion du Root)
+Fenêtre principale pour l'administrateur système (Root).
+
+Éléments présents :**
+En-tête : Connecté en tant que ROOT | Bouton : [ Modifier mot de passe Root ] | Bouton : [ Déconnexion ]
+Zone principale (Liste) : Un tableau affichant toutes les ligues (ID, Nom de la ligue, Administrateur actuel).
+Panneau d'actions (Boutons sous le tableau) :
+[ Ajouter une Ligue ] *(Ouvre une boîte de dialogue pour saisir le nom)
+[ Modifier la Ligue sélectionnée ] 
+[ Supprimer la Ligue sélectionnée ]
+[ Gérer la Ligue ] *(Ouvre la Fenêtre 3 pour la ligue sélectionnée)*
+
+
+3. Fenêtre de Gestion d'une Ligue (Critères : Liste Employés, CRUD Employés, Admin des ligues)
+Fenêtre qui s'ouvre quand on gère une ligue spécifique (ou au login si on est juste admin de cette ligue).
+
+Éléments présents :
+En-tête : Nom de la Ligue (ex: Ligue de Tennis) | Bouton : [ Déconnexion ]
+Zone Admin (Critère Admin des ligues) : Texte : "Administrateur actuel : 
+Bouton : [ Changer l'Administrateur ] *(Ouvre une liste déroulante des employés de la ligue pour en nommer un nouveau)
+Zone principale (Liste) : Un tableau affichant les employés de cette ligue (Nom, Prénom, Mail, Date d'arrivée, Date de départ).
+Panneau d'actions Employés :
+[ Ajouter un Employé ] *(Ouvre le formulaire Employé)
+[ Modifier l'Employé sélectionné ]
+[ Supprimer l'Employé sélectionné ]
+
+---
+
+4. Boîtes de dialogue (Pop-ups / Modales)
+Au lieu de faire des menus complexes, les actions d'ajout utilisent des petites fenêtres pop-up.
+
+A. Formulaire Employé (Ajout/Modification) :**
+Champs de texte : Nom, Prénom, Mail
+Champ mot de passe : Mot de passe
+Sélecteurs de date: Date d'arrivée, Date de départ
+Boutons : [ Annuler ] / [ Sauvegarder ]
+
+B. Formulaire Changement de mot de passe Root :**
+Champs : Ancien mot de passe, Nouveau mot de passe, Confirmer nouveau mot de passe.
+Boutons : [ Annuler ] / [ Valider ]
