@@ -46,15 +46,9 @@ public class Ligue implements Serializable, Comparable<Ligue>
         return nom;
     }
     
-    /**
-     * Change le nom de la ligue et met à jour la base de données.
-     * @param nom le nouveau nom de la ligue
-     * @throws SauvegardeImpossible si la mise à jour dans la base échoue
-     */
-    public void setNom(String nom) throws SauvegardeImpossible
+    public void setNom(String nom)
     {
         this.nom = nom;
-        gestionPersonnel.update(this);
     }
     
     public SortedSet<Employe> getEmployes()
@@ -67,19 +61,9 @@ public class Ligue implements Serializable, Comparable<Ligue>
         return administrateur;
     }
     
-    /**
-     * Change l'administrateur de la ligue.
-     * @param administrateur le nouvel administrateur
-     * @throws SauvegardeImpossible si la mise à jour dans la base échoue
-     */
-    public void setAdministrateur(Employe administrateur) throws SauvegardeImpossible
+    public void setAdministrateur(Employe administrateur)
     {
         this.administrateur = administrateur;
-        // Note: Si l'administrateur est stocké dans la table ligue,
-        // il faudrait aussi mettre à jour la base ici
-        // Pour l'instant, on ne fait que la mise à jour en mémoire
-        // Si nécessaire, décommentez la ligne suivante :
-        // gestionPersonnel.update(this);
     }
     
     public Employe addEmploye(String nom, String prenom, String mail, String password) throws SauvegardeImpossible
